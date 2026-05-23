@@ -13,7 +13,8 @@ import {
   AlertCircle,
   X,
   Send,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from 'lucide-react';
 import { Task, Store, User as AppUser, ChecklistItem } from '../types';
 
@@ -44,6 +45,7 @@ export default function TasksTab({
   // Modals & Drawers
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -663,6 +665,48 @@ export default function TasksTab({
                     </button>
                   </div>
                 </div>
+
+                {/* DANGER ZONE FOR LEAD ROLE */}
+                {currentUserRole === 'Lead Marketplace' && (
+                  <div className="pt-4 mt-6 border-t border-red-100 bg-red-50/30 p-4 rounded-xl space-y-2 select-none">
+                    <p className="text-[10px] text-red-800 font-extrabold uppercase tracking-wider">Zona Bahaya (Lead Only)</p>
+                    {confirmDeleteId === selectedTask.id ? (
+                      <div className="flex items-center justify-between bg-red-100/50 p-2.5 rounded-lg border border-red-200 animate-fade-in">
+                        <span className="text-[10px] text-red-900 font-extrabold">Hapus tugas ini sekarang?</span>
+                        <div className="flex gap-1.5 animate-fade-in">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTasks(prev => prev.filter(t => t.id !== selectedTask.id));
+                              onLogActivity('Task', 'Hapus Tugas', `Menghapus penugasan "${selectedTask.title}" (ID: ${selectedTask.id}).`);
+                              setSelectedTask(null);
+                              setConfirmDeleteId(null);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-[9px] px-2.5 py-1.5 rounded-lg transition"
+                          >
+                            Ya, Hapus
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="bg-white hover:bg-gray-100 text-gray-705 border border-gray-200 font-extrabold text-[9px] px-2.5 py-1.5 rounded-lg transition"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteId(selectedTask.id)}
+                        className="w-full bg-red-55 hover:bg-red-100/80 text-red-600 border border-red-200 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center space-x-1.5 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                        <span>Hapus Tugas Kerja</span>
+                      </button>
+                    )}
+                  </div>
+                )}
 
               </div>
             </div>

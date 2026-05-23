@@ -20,6 +20,7 @@ import {
   seedDatabaseIfEmpty,
   fetchUsers,
   upsertUser,
+  deleteUser,
   fetchStores,
   upsertStore,
   deleteStore,
@@ -206,6 +207,18 @@ export default function App() {
         const deletedIds = prev.map(p => p.id).filter(id => !next.map(n => n.id).includes(id));
         deletedIds.forEach(id => deleteProduct(id));
         next.forEach(item => upsertProduct(item));
+      }
+      return next;
+    });
+  };
+
+  const handleSetUsers = (updater: React.SetStateAction<User[]>) => {
+    setUsers((prev) => {
+      const next = typeof updater === 'function' ? (updater as Function)(prev) : updater;
+      if (isSupabaseConfigured) {
+        const deletedIds = prev.map(p => p.id).filter(id => !next.map(n => n.id).includes(id));
+        deletedIds.forEach(id => deleteUser(id));
+        next.forEach(item => upsertUser(item));
       }
       return next;
     });
@@ -496,6 +509,7 @@ export default function App() {
               users={users}
               onLogActivity={handleLogActivity}
               canEdit={hasWritePermission('stores')}
+              currentUserRole={currentUserRole}
             />
           )}
 
@@ -519,6 +533,7 @@ export default function App() {
               users={users}
               onLogActivity={handleLogActivity}
               canEdit={hasWritePermission('campaigns')}
+              currentUserRole={currentUserRole}
             />
           )}
 
@@ -529,6 +544,7 @@ export default function App() {
               stores={stores}
               onLogActivity={handleLogActivity}
               canEdit={currentUserRole === 'Lead Marketplace' || currentUserRole === 'Ads Specialist'}
+              currentUserRole={currentUserRole}
             />
           )}
 
@@ -539,6 +555,7 @@ export default function App() {
               stores={stores}
               onLogActivity={handleLogActivity}
               canEdit={hasWritePermission('products')}
+              currentUserRole={currentUserRole}
             />
           )}
 
@@ -567,7 +584,10 @@ export default function App() {
           {activeTab === 'team' && currentUserRole === 'Lead Marketplace' && (
             <TeamTab 
               users={users}
+              setUsers={handleSetUsers}
               tasks={tasks}
+              currentUser={currentUser}
+              onLogActivity={handleLogActivity}
             />
           )}
 

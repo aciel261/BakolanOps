@@ -8,7 +8,8 @@ import {
   AlertTriangle,
   Award,
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from 'lucide-react';
 import { Product, Store, ProductChecklist } from '../types';
 
@@ -18,6 +19,7 @@ interface ProductsTabProps {
   stores: Store[];
   onLogActivity: (type: 'Store' | 'Task' | 'Campaign' | 'Ads' | 'Product' | 'Auth' | 'System', action: string, details: string) => void;
   canEdit: boolean;
+  currentUserRole?: string;
 }
 
 export default function ProductsTab({
@@ -25,12 +27,14 @@ export default function ProductsTab({
   setProducts,
   stores,
   onLogActivity,
-  canEdit
+  canEdit,
+  currentUserRole
 }: ProductsTabProps) {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterStoreId, setFilterStoreId] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   
   // New Product Draft Input State
   const [formData, setFormData] = useState({
@@ -279,6 +283,43 @@ export default function ProductsTab({
                       "<strong>Catatan Tim:</strong> {p.notes || 'Listing berada dalam kondisi optimal.'}"
                     </p>
                   </div>
+
+                  {currentUserRole === 'Lead Marketplace' && (
+                    <div className="shrink-0 select-none">
+                      {confirmDeleteId === p.id ? (
+                        <div className="flex items-center space-x-1.5 bg-red-50 p-2 rounded-xl border border-red-150 animate-fade-in text-xs font-mono">
+                          <span className="text-[10px] text-red-700 font-extrabold uppercase">Hapus SKU?</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProducts(prev => prev.filter(item => item.id !== p.id));
+                              onLogActivity('Product', 'Hapus Produk', `Menghapus penayangan produk katalog "${p.name}" (SKU: ${p.sku}).`);
+                              setConfirmDeleteId(null);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-[9px] px-2 py-1 rounded-md transition"
+                          >
+                            Ya
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="bg-white hover:bg-gray-100 text-gray-605 font-extrabold text-[9px] px-2 py-1 rounded-md border border-gray-200 transition"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(p.id)}
+                          className="text-[10px] text-red-600 hover:text-white hover:bg-red-600 font-extrabold uppercase px-2.5 py-1 rounded-md border border-red-200 hover:border-red-650 transition flex items-center space-x-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus SKU</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
               </div>

@@ -7,7 +7,8 @@ import {
   User, 
   TrendingUp, 
   FileText,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
 import { Store, User as AppUser } from '../types';
 
@@ -17,6 +18,7 @@ interface StoresTabProps {
   users: AppUser[];
   onLogActivity: (type: 'Store' | 'Task' | 'Campaign' | 'Ads' | 'Product' | 'Auth' | 'System', action: string, details: string) => void;
   canEdit: boolean;
+  currentUserRole?: string;
 }
 
 export default function StoresTab({
@@ -24,12 +26,14 @@ export default function StoresTab({
   setStores,
   users,
   onLogActivity,
-  canEdit
+  canEdit,
+  currentUserRole
 }: StoresTabProps) {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterMarketplace, setFilterMarketplace] = useState<string>('All');
   const [filterStatus, setFilterStatus] = useState<string>('All');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // New Store State Initialiser
   const [formData, setFormData] = useState({
@@ -233,6 +237,48 @@ export default function StoresTab({
                     </a>
                   )}
                 </div>
+
+                {/* Secure delete only for Lead Marketplace */}
+                {currentUserRole === 'Lead Marketplace' && (
+                  <div className="pt-3 border-t border-gray-100 mt-2 select-none">
+                    {confirmDeleteId === store.id ? (
+                      <div className="flex items-center justify-between bg-red-50 p-2 rounded-xl border border-red-150 animate-fade-in">
+                        <span className="text-[10px] text-red-700 font-extrabold uppercase">Hapus Toko ini?</span>
+                        <div className="flex items-center space-x-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStores(prev => prev.filter(s => s.id !== store.id));
+                              onLogActivity('Store', 'Hapus Toko', `Menghapus toko marketplace "${store.name}" (Kanal: ${store.marketplace}) dari list.`);
+                              setConfirmDeleteId(null);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-[9px] px-2 py-1 rounded-md transition"
+                          >
+                            Hapus
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-extrabold text-[9px] px-2 py-1 rounded-md border border-gray-200 transition bg-white"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(store.id)}
+                          className="text-[9px] text-red-600 hover:text-white hover:bg-red-600 font-extrabold uppercase px-2.5 py-1 rounded-md border border-red-200 hover:border-red-650 transition flex items-center space-x-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Hapus Toko</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

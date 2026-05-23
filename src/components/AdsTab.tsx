@@ -7,7 +7,8 @@ import {
   Calculator, 
   AlertCircle,
   TrendingDown,
-  Info
+  Info,
+  Trash2
 } from 'lucide-react';
 import { AdPerformance, Store } from '../types';
 
@@ -17,6 +18,7 @@ interface AdsTabProps {
   stores: Store[];
   onLogActivity: (type: 'Store' | 'Task' | 'Campaign' | 'Ads' | 'Product' | 'Auth' | 'System', action: string, details: string) => void;
   canEdit: boolean;
+  currentUserRole?: string;
 }
 
 export default function AdsTab({
@@ -24,11 +26,13 @@ export default function AdsTab({
   setAds,
   stores,
   onLogActivity,
-  canEdit
+  canEdit,
+  currentUserRole
 }: AdsTabProps) {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterMarketplace, setFilterMarketplace] = useState<string>('All');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -232,12 +236,13 @@ export default function AdsTab({
               <th className="p-4 text-center">ROAS Hasil</th>
               <th className="p-4">Rekomendasi Tindakan</th>
               <th className="p-4 pr-6">Catatan Analis</th>
+              {currentUserRole === 'Lead Marketplace' && <th className="p-4 pr-6 text-right">Aksi</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 text-xs font-mono">
             {filteredAds.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-8 text-center text-gray-400 font-sans">Belum ada record ads harian terdaftar.</td>
+                <td colSpan={currentUserRole === 'Lead Marketplace' ? 10 : 9} className="p-8 text-center text-gray-400 font-sans">Belum ada record ads harian terdaftar.</td>
               </tr>
             ) : (
               filteredAds.map((ad) => {
@@ -278,9 +283,41 @@ export default function AdsTab({
                         {ad.actionStatus}
                       </span>
                     </td>
-                    <td className="p-4 pr-6 text-gray-500 font-sans italic max-w-xs truncate" title={ad.notes}>
+                    <td className="p-4 text-gray-500 font-sans italic max-w-xs truncate" title={ad.notes}>
                       "{ad.notes || 'Tidak ada analisis khusus.'}"
                     </td>
+                    {currentUserRole === 'Lead Marketplace' && (
+                      <td className="p-4 pr-6 text-right">
+                        {confirmDeleteId === ad.id ? (
+                          <div className="flex items-center space-x-1 justify-end animate-fade-in">
+                            <button
+                              onClick={() => {
+                                setAds(prev => prev.filter(item => item.id !== ad.id));
+                                onLogActivity('Ads', 'Hapus Record Iklan', `Menghapus record performa iklan produk "${ad.productName}" (Atribusi: ${ad.marketplace}).`);
+                                setConfirmDeleteId(null);
+                              }}
+                              className="bg-red-650 hover:bg-red-700 text-white font-extrabold text-[9px] px-2 py-1 rounded-md transition"
+                            >
+                              Ya, Hapus
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-extrabold text-[9px] px-2 py-1 rounded-md border border-gray-200 transition bg-white"
+                            >
+                              Batal
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDeleteId(ad.id)}
+                            className="text-red-600 hover:text-white hover:bg-red-600 p-1.5 rounded-lg border border-red-200 transition"
+                            title="Hapus Record Iklan"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 );
               })

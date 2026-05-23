@@ -10,7 +10,8 @@ import {
   ChevronRight,
   Sparkles,
   Trophy,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
 import { Campaign, Store, User as AppUser, ChecklistItem } from '../types';
 
@@ -21,6 +22,7 @@ interface CampaignsTabProps {
   users: AppUser[];
   onLogActivity: (type: 'Store' | 'Task' | 'Campaign' | 'Ads' | 'Product' | 'Auth' | 'System', action: string, details: string) => void;
   canEdit: boolean;
+  currentUserRole?: string;
 }
 
 export default function CampaignsTab({
@@ -29,11 +31,13 @@ export default function CampaignsTab({
   stores,
   users,
   onLogActivity,
-  canEdit
+  canEdit,
+  currentUserRole
 }: CampaignsTabProps) {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Stats input state for recording actual performance values
   const [actualGmvInput, setActualGmvInput] = useState<string>('');
@@ -412,6 +416,48 @@ export default function CampaignsTab({
                   </div>
                 )}
               </div>
+
+              {/* Secure danger zone deleting campaigns only for Lead Marketplace */}
+              {currentUserRole === 'Lead Marketplace' && (
+                <div className="pt-4 mt-6 border-t border-red-100 bg-red-50/20 p-4 rounded-xl space-y-2 select-none animate-fade-in">
+                  <p className="text-[10px] text-red-800 font-extrabold uppercase tracking-wider">Zona Bahaya (Lead Only)</p>
+                  {confirmDeleteId === selectedCampaign.id ? (
+                    <div className="flex items-center justify-between bg-red-55 p-2 rounded-xl border border-red-150 animate-fade-in">
+                      <span className="text-[10px] text-red-900 font-extrabold">Hapus program promo ini?</span>
+                      <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCampaigns(prev => prev.filter(c => c.id !== selectedCampaign.id));
+                            onLogActivity('Campaign', 'Hapus Campaign', `Menghapus perencanaan kampanye promo "${selectedCampaign.name}" (ID: ${selectedCampaign.id}).`);
+                            setSelectedCampaign(null);
+                            setConfirmDeleteId(null);
+                          }}
+                          className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-[9px] px-2.5 py-1.5 rounded-lg transition"
+                        >
+                          Hapus
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 font-extrabold text-[9px] px-2.5 py-1.5 rounded-lg transition"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteId(selectedCampaign.id)}
+                      className="w-full bg-red-55 hover:bg-red-100/80 text-red-600 border border-red-200 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center space-x-1.5 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <span>Hapus Program Kampanye</span>
+                    </button>
+                  )}
+                </div>
+              )}
 
             </div>
           ) : (

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { 
   Users, 
   CheckCircle, 
@@ -7,19 +7,28 @@ import {
   Mail, 
   Award, 
   Gauge, 
-  AlertCircle 
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
 import { User as AppUser, Task } from '../types';
 
 interface TeamTabProps {
   users: AppUser[];
+  setUsers: React.Dispatch<React.SetStateAction<AppUser[]>>;
   tasks: Task[];
+  currentUser?: AppUser | null;
+  onLogActivity: (type: 'Store' | 'Task' | 'Campaign' | 'Ads' | 'Product' | 'Auth' | 'System', action: string, details: string) => void;
 }
 
 export default function TeamTab({
   users,
-  tasks
+  setUsers,
+  tasks,
+  currentUser,
+  onLogActivity
 }: TeamTabProps) {
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Calculate dynamic workload and completion metrics per user
   const userPerformance = useMemo(() => {
@@ -161,6 +170,43 @@ export default function TeamTab({
                   />
                 </div>
               </div>
+
+              {/* Secure delete controls only for Lead Marketplace */}
+              {confirmDeleteId === u.id ? (
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-red-50 bg-red-50/50 p-3 rounded-xl animate-fade-in">
+                  <span className="text-[10px] text-red-700 font-extrabold uppercase">Hapus Anggota?</span>
+                  <div className="flex items-center space-x-1.5">
+                    <button
+                      onClick={() => {
+                        setUsers(prev => prev.filter(user => user.id !== u.id));
+                        onLogActivity('Auth', 'Hapus Akun Pengguna', `Menghapus akun pengguna "${u.name}" (ID: ${u.id}) dari tim.`);
+                        setConfirmDeleteId(null);
+                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white text-[9px] font-extrabold px-2.5 py-1.5 rounded-lg transition"
+                    >
+                      Ya, Hapus
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(null)}
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-600 text-[9px] font-extrabold px-2.5 py-1.5 rounded-lg transition"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                currentUser?.id !== u.id && (
+                  <div className="flex justify-end mt-2 pt-2">
+                    <button
+                      onClick={() => setConfirmDeleteId(u.id)}
+                      className="text-[9px] text-red-600 hover:text-white hover:bg-red-600 hover:border-red-600 font-bold uppercase px-2.5 py-1 rounded-lg border border-red-200 transition flex items-center space-x-1"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Hapus Akun</span>
+                    </button>
+                  </div>
+                )
+              )}
 
             </div>
           );

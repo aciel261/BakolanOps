@@ -317,6 +317,12 @@ export async function upsertUser(user: User) {
   if (error) console.error('Error upserting user:', error);
 }
 
+export async function deleteUser(id: string) {
+  if (!supabase) return;
+  const { error } = await supabase.from('users').delete().eq('id', id);
+  if (error) console.error('Error deleting user:', error);
+}
+
 export async function fetchStores(): Promise<Store[]> {
   if (!supabase) return INITIAL_STORES;
   const { data, error } = await supabase.from('stores').select('*').order('name');
