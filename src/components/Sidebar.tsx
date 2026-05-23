@@ -19,6 +19,8 @@ interface SidebarProps {
   canAccess: (feature: string) => string;
   storesCount: number;
   pendingApprovals: number;
+  isSupabaseConfigured: boolean;
+  onShowSetup: () => void;
 }
 
 export default function Sidebar({ 
@@ -26,7 +28,9 @@ export default function Sidebar({
   setActiveTab, 
   canAccess, 
   storesCount,
-  pendingApprovals 
+  pendingApprovals,
+  isSupabaseConfigured,
+  onShowSetup
 }: SidebarProps) {
   
   const menuItems = [
@@ -103,10 +107,22 @@ export default function Sidebar({
       <div className="p-4 border-t border-blue-900 bg-[#111827]/30 text-xs text-blue-200 space-y-1 text-center font-mono">
         <p className="font-bold text-white font-sans text-[13px]">MarketOps Pro v1.4</p>
         <p className="text-[10px]">Target Periode: Mei 2026</p>
-        <div className="flex justify-center items-center space-x-1.5 text-[9px] text-gray-400 mt-1">
-          <span className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
-          <span>Active Session DB</span>
-        </div>
+        {isSupabaseConfigured ? (
+          <div className="flex justify-center items-center space-x-1.5 text-[9px] text-[#34D399] mt-1 select-none">
+            <span className="h-2 w-2 bg-emerald-400 rounded-full animate-pulse" />
+            <span className="font-bold uppercase tracking-wider">SUPABASE CONNECTED</span>
+          </div>
+        ) : (
+          <button 
+            type="button"
+            onClick={onShowSetup}
+            className="w-full flex justify-center items-center space-x-1.5 text-[9px] text-amber-300 mt-1 cursor-pointer hover:bg-blue-900/50 hover:text-white rounded py-1 px-1 transition font-bold uppercase tracking-wider"
+            title="Klik untuk panduan koneksi Supabase & SQL Script"
+          >
+            <span className="h-2 w-2 bg-amber-400 rounded-full shrink-0" />
+            <span>MODE SIMULASI (KLIK INFO)</span>
+          </button>
+        )}
       </div>
     </aside>
   );

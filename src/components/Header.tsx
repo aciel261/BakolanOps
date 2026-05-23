@@ -1,29 +1,23 @@
 import React, { useState, useMemo } from 'react';
-import { Bell, Check, UserCheck, Inbox } from 'lucide-react';
+import { Bell, Check, UserCheck, Inbox, LogOut } from 'lucide-react';
 import { User, Notification } from '../types';
 
 interface HeaderProps {
-  currentUserRole: string;
-  setCurrentUserRole: (role: string) => void;
-  users: User[];
+  currentUser: User;
+  onLogout: () => void;
   notifications: Notification[];
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   onLogActivity: (type: 'Store' | 'Task' | 'Campaign' | 'Ads' | 'Product' | 'Auth' | 'System', action: string, details: string) => void;
 }
 
 export default function Header({
-  currentUserRole,
-  setCurrentUserRole,
-  users,
+  currentUser,
+  onLogout,
   notifications,
   setNotifications,
   onLogActivity,
 }: HeaderProps) {
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
-
-  const currentUser = useMemo(() => {
-    return users.find((u) => u.role === currentUserRole) || users[0];
-  }, [currentUserRole, users]);
 
   const unreadCount = useMemo(() => {
     return notifications.filter((n) => n.unread).length;
@@ -43,27 +37,16 @@ export default function Header({
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 z-30 sticky top-0 shadow-xs">
       
-      {/* Dynamic Role SWITCHURAL */}
-      <div className="flex items-center space-x-3">
-        <div className="bg-blue-50 p-1.5 rounded-lg border border-blue-100">
-          <UserCheck className="w-[18px] h-[18px] text-blue-700" />
+      {/* Real-time Signed-in Role Status */}
+      <div className="flex items-center space-x-3 select-none">
+        <div className="bg-emerald-50 p-1.5 rounded-lg border border-emerald-100">
+          <UserCheck className="w-[18px] h-[18px] text-emerald-700" />
         </div>
-        <div className="flex items-center space-x-2.5">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Simulasi Hak Akses:</span>
-          <select
-            value={currentUserRole}
-            onChange={(e) => {
-              setCurrentUserRole(e.target.value);
-              onLogActivity('Auth', 'Ganti Peran Simulasi', `Role diganti ke ${e.target.value}`);
-            }}
-            className="bg-blue-50/80 hover:bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5 px-3 cursor-pointer outline-none transition"
-          >
-            {users.map((u) => (
-              <option key={u.id} value={u.role}>
-                {u.role} ({u.name})
-              </option>
-            ))}
-          </select>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Peran Anda:</span>
+          <span className="bg-emerald-100 text-emerald-900 text-xs font-bold rounded-lg px-3 py-1.5 border border-emerald-250">
+            {currentUser.role}
+          </span>
         </div>
       </div>
 
@@ -130,8 +113,8 @@ export default function Header({
           )}
         </div>
 
-        {/* LOGGED IN USER DETAILS */}
-        <div className="flex items-center space-x-3 border-l pl-6 border-gray-200 select-none">
+        {/* LOGGED IN USER DETAILS & LOGOUT */}
+        <div className="flex items-center space-x-4 border-l pl-6 border-gray-200 select-none">
           <div className="text-right">
             <p className="text-sm font-bold text-gray-800">{currentUser.name}</p>
             <div className="flex items-center justify-end space-x-1.5">
@@ -141,9 +124,23 @@ export default function Header({
               </p>
             </div>
           </div>
-          <div className="w-9 h-9 bg-[#1E3A8A] border-2 border-blue-200 rounded-full flex items-center justify-center text-white font-extrabold shadow-sm text-xs uppercase">
+          
+          <div className="w-9 h-9 bg-blue-800 border-2 border-emerald-300 rounded-full flex items-center justify-center text-white font-extrabold shadow-sm text-xs uppercase">
             {currentUser.avatar}
           </div>
+
+          {/* LOGOUT BUTTON */}
+          <button
+            onClick={() => {
+              if (window.confirm('Apakah Anda yakin ingin keluar dari workspace?')) {
+                onLogout();
+              }
+            }}
+            title="Keluar dari Akun"
+            className="p-2 ml-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer border border-transparent hover:border-red-100"
+          >
+            <LogOut className="w-4.5 h-4.5" />
+          </button>
         </div>
       </div>
     </header>
