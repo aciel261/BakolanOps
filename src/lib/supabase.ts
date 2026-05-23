@@ -12,10 +12,13 @@ import {
   INITIAL_LOGS 
 } from '../data';
 
-// Read public environment variables from Vite configuration safely
+// Read public environment variables or local storage overrides safely
 const envSource = (import.meta as any).env || {};
-const supabaseUrl = (envSource.VITE_SUPABASE_URL || '').trim();
-const supabaseAnonKey = (envSource.VITE_SUPABASE_ANON_KEY || '').trim();
+const rawUrl = envSource.VITE_SUPABASE_URL || localStorage.getItem('temp_supabase_url') || '';
+const rawKey = envSource.VITE_SUPABASE_ANON_KEY || localStorage.getItem('temp_supabase_anon_key') || '';
+
+const supabaseUrl = rawUrl.trim();
+const supabaseAnonKey = rawKey.trim();
 
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 

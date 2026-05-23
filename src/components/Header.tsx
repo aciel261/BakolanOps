@@ -18,6 +18,7 @@ export default function Header({
   onLogActivity,
 }: HeaderProps) {
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const unreadCount = useMemo(() => {
     return notifications.filter((n) => n.unread).length;
@@ -35,7 +36,7 @@ export default function Header({
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 z-30 sticky top-0 shadow-xs">
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 z-35 sticky top-0 shadow-xs">
       
       {/* Real-time Signed-in Role Status */}
       <div className="flex items-center space-x-3 select-none">
@@ -129,18 +130,46 @@ export default function Header({
             {currentUser.avatar}
           </div>
 
-          {/* LOGOUT BUTTON */}
-          <button
-            onClick={() => {
-              if (window.confirm('Apakah Anda yakin ingin keluar dari workspace?')) {
-                onLogout();
-              }
-            }}
-            title="Keluar dari Akun"
-            className="p-2 ml-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer border border-transparent hover:border-red-100"
-          >
-            <LogOut className="w-4.5 h-4.5" />
-          </button>
+          {/* LOGOUT BUTTON WITH CUSTOM INLINE DROPDOWN CONFIRMATION */}
+          <div className="relative">
+            <button
+              onClick={() => setShowLogoutConfirm(!showLogoutConfirm)}
+              title="Keluar dari Akun"
+              className={`p-2 ml-1 rounded-xl transition cursor-pointer border ${
+                showLogoutConfirm 
+                  ? 'text-red-600 bg-red-50 border-red-150' 
+                  : 'text-gray-400 hover:text-red-600 hover:bg-red-50 border-transparent hover:border-red-100'
+              }`}
+            >
+              <LogOut className="w-4.5 h-4.5" />
+            </button>
+            
+            {showLogoutConfirm && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowLogoutConfirm(false)} />
+                <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-2xl p-3 border border-gray-150 z-50 text-left animate-fade-in">
+                  <p className="text-[11px] font-bold text-gray-700 leading-tight mb-2">Yakin ingin keluar dan kembali ke login?</p>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => {
+                        setShowLogoutConfirm(false);
+                        onLogout();
+                      }}
+                      className="flex-1 text-center py-1.5 px-2 bg-red-600 hover:bg-red-700 text-white font-extrabold text-[10px] rounded-lg transition"
+                    >
+                      Ya, Keluar
+                    </button>
+                    <button
+                      onClick={() => setShowLogoutConfirm(false)}
+                      className="flex-1 text-center py-1.5 px-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-extrabold text-[10px] rounded-lg transition"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

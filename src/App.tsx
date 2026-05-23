@@ -64,6 +64,22 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
 
+  // Raw input strings for inline connection
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState(() => localStorage.getItem('temp_supabase_url') || '');
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState(() => localStorage.getItem('temp_supabase_anon_key') || '');
+
+  const handleConnectSupabaseDirectly = () => {
+    localStorage.setItem('temp_supabase_url', supabaseUrlInput.trim());
+    localStorage.setItem('temp_supabase_anon_key', supabaseKeyInput.trim());
+    window.location.reload();
+  };
+
+  const handleDisconnectSupabaseDirectly = () => {
+    localStorage.removeItem('temp_supabase_url');
+    localStorage.removeItem('temp_supabase_anon_key');
+    window.location.reload();
+  };
+
   // Core synchronized React States
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -579,17 +595,17 @@ export default function App() {
             {/* Modal Header */}
             <div className="flex justify-between items-start border-b border-gray-100 pb-4 mb-5">
               <div className="flex items-center space-x-3.5">
-                <div className="bg-emerald-50 text-emerald-700 p-2.5 rounded-2xl border border-emerald-100">
+                <div className="bg-[#1E3A8A] text-white p-2.5 rounded-2xl">
                   <span className="font-extrabold text-lg block leading-none">S</span>
                 </div>
                 <div>
                   <h3 className="text-xl font-extrabold text-[#111822]">Koneksi Eksklusif Supabase & Vercel</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">Langkah detail menghubungkan database dan storage Anda.</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Hubungkan DB real-time Anda langsung di live-preview ini atau via Vercel.</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowSetupModal(false)}
-                className="p-1 px-2.5 bg-gray-100 hover:bg-gray-250 text-gray-500 font-bold text-sm rounded-lg transition cursor-pointer select-none"
+                className="p-1 px-2.5 bg-gray-105 hover:bg-gray-200 text-gray-500 font-bold text-sm rounded-lg transition cursor-pointer select-none"
               >
                 ✕
               </button>
@@ -598,6 +614,65 @@ export default function App() {
             {/* Modal Body */}
             <div className="space-y-6 text-[#334155] text-xs leading-relaxed overflow-y-auto max-h-[55vh] pr-2">
               
+              {/* BRAND NEW: DIRECT CONNECTION FORM FOR SIMULATION BOX */}
+              <div className="bg-amber-50/50 border-2 border-amber-200 p-5 rounded-3xl space-y-3.5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="font-extrabold text-amber-900 text-sm flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 bg-amber-500 rounded-full animate-pulse" />
+                      <span>Koneksi Instan Langsung ke Supabase (Khusus Workspace Preview Ini)</span>
+                    </h4>
+                    <p className="text-amber-800 text-[11px] mt-1 font-medium">
+                      Gunakan panel ini jika Anda ingin menguji integrasi Supabase langsung di tab preview kerja ini tanpa melakukan deploy ulang!
+                    </p>
+                  </div>
+                  {isSupabaseConfigured && (
+                    <button
+                      type="button"
+                      onClick={handleDisconnectSupabaseDirectly}
+                      className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-[10px] px-3 py-1.5 rounded-lg transition shadow-xs"
+                    >
+                      PUTUSKAN KONEKSI
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">Supabase Project URL</label>
+                    <input
+                      type="text"
+                      value={supabaseUrlInput}
+                      onChange={(e) => setSupabaseUrlInput(e.target.value)}
+                      placeholder="https://xyzxyz.supabase.co"
+                      className="w-full p-2.5 bg-white border border-amber-300 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">Supabase Anon Key (Public Key)</label>
+                    <input
+                      type="password"
+                      value={supabaseKeyInput}
+                      onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                      placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      className="w-full p-2.5 bg-white border border-amber-300 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center text-[10px] text-amber-800 pt-1.5 border-t border-amber-200/50">
+                  <span>💡 Data disimpan secara privat dan aman di localStorage browser Anda.</span>
+                  <button
+                    type="button"
+                    onClick={handleConnectSupabaseDirectly}
+                    disabled={!supabaseUrlInput.trim() || !supabaseKeyInput.trim()}
+                    className="bg-[#1E3A8A] hover:bg-blue-800 text-white font-extrabold px-4  py-2 rounded-xl transition cursor-pointer shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Simpan & Hubungkan Sekarang (Otomatis Sync)
+                  </button>
+                </div>
+              </div>
+
               {/* Box Info Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-[#1E3A8A]/5 border border-blue-100 p-4 rounded-2xl">
